@@ -1,0 +1,16 @@
+# Rolex — Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Phase 1 — Ears (Listening)
+openai-whisper          # Local speech-to-text (runs fully offline)
+sounddevice             # Mic input (easier Windows install than pyaudio)
+scipy                   # WAV file saving
+numpy                   # Audio array processing
+
+# Phase 2 — Voice (Speaking) — install when ready
+# ollama                # Python client for local Ollama LLM
+# TTS                   # Coqui TTS (alternative to Piper)
+
+# Phase 3 — Eyes (Seeing) — install when ready
+# Pillow                # Screenshot capture and image processing
+# pyautogui             # Screen capture
