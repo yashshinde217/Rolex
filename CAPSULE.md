@@ -6,8 +6,8 @@
 ---
 
 ## Last Updated
-**Timestamp:** 2026-05-24 00:00:00 UTC
-**Phase:** Phase 1 — Ears (Listening) ✅ Complete
+**Timestamp:** 2026-05-24 01:00:00 UTC
+**Phase:** Phase 2 — Voice (Speaking) ✅ Complete
 
 ---
 
@@ -19,15 +19,18 @@
 | Version      | V1                                 |
 | Platform     | Windows (VS Code)                  |
 | Language     | Python 3.10+                       |
-| AI Model     | Whisper (STT) · Ollama LLM · Piper TTS · LLaVA (Vision) |
-| Cost         | 100% Free — all models run locally, no API keys, no subscriptions |
+| AI Brain     | Ollama — llama3.2 (local LLM)      |
+| STT          | OpenAI Whisper — base model (local)|
+| TTS          | pyttsx3 — Windows SAPI5 (offline)  |
+| Vision       | LLaVA via Ollama — Phase 3         |
+| Cost         | 100% Free — all models run locally, no API keys |
 | Developer    | Solo project                       |
 
 ---
 
 ## Vision
 
-Build a personal AI assistant named Rolex that runs entirely on the user's local machine — no cloud, no API costs, no subscriptions. Inspired by Jarvis (Iron Man). The assistant should be able to hear, speak, and see. Eventually it will control the laptop and browse the internet autonomously.
+Build a personal AI assistant named Rolex that runs entirely on the user's local machine — no cloud, no API costs, no subscriptions. Inspired by Jarvis (Iron Man). The assistant can hear, speak, and see. Eventually it will control the laptop and browse the internet autonomously.
 
 ---
 
@@ -36,7 +39,7 @@ Build a personal AI assistant named Rolex that runs entirely on the user's local
 | Power    | Capability                                 | Status      |
 |----------|--------------------------------------------|-------------|
 | Hearing  | Listen via microphone, transcribe speech   | ✅ Phase 1  |
-| Speaking | Think via LLM, reply via TTS               | ⏳ Phase 2  |
+| Speaking | Think via LLM, reply via TTS               | ✅ Phase 2  |
 | Seeing   | Capture screen, understand visually        | ⏳ Phase 3  |
 
 ---
@@ -46,12 +49,11 @@ Build a personal AI assistant named Rolex that runs entirely on the user's local
 | Layer            | Tool / Library         | Purpose                              |
 |------------------|------------------------|--------------------------------------|
 | Speech-to-Text   | OpenAI Whisper (local) | Convert mic audio to text            |
-| LLM Brain        | Ollama + LLaMA 3 / Mistral | Local language model for reasoning |
-| Text-to-Speech   | Piper TTS              | Natural voice output, runs offline   |
-| Vision           | LLaVA (via Ollama)     | Understand screenshots visually      |
+| LLM Brain        | Ollama + LLaMA 3.2     | Local language model for reasoning   |
+| Text-to-Speech   | pyttsx3 (SAPI5)        | Natural voice output, fully offline  |
+| Vision           | LLaVA (via Ollama)     | Understand screenshots — Phase 3     |
 | Audio Capture    | sounddevice + scipy    | Mic input, WAV recording             |
-| VAD              | webrtcvad              | Voice Activity Detection             |
-| Vector Memory    | ChromaDB               | Persistent memory across sessions    |
+| HTTP Client      | requests               | Talk to Ollama's local API           |
 | Backend          | Python 3.10+           | Core runtime                         |
 | Version Control  | Git                    | Full history from day one            |
 
@@ -67,12 +69,31 @@ rolex/
 ├── .gitignore              ← Files excluded from git
 ├── src/
 │   ├── listener.py         ← Phase 1: Mic input + Whisper STT
-│   ├── speaker.py          ← Phase 2: Piper TTS voice output
-│   ├── brain.py            ← Phase 2: Ollama LLM integration
+│   ├── brain.py            ← Phase 2: Ollama LLM integration ✅
+│   ├── speaker.py          ← Phase 2: pyttsx3 TTS voice output ✅
 │   ├── vision.py           ← Phase 3: Screenshot + LLaVA vision
-│   └── main.py             ← Entry point, ties all phases together
+│   └── main.py             ← Phase 2: Full loop entry point ✅
 ├── assets/                 ← Voice models, config files
 └── logs/                   ← Session transcripts and debug logs
+```
+
+---
+
+## How to Run
+
+### Phase 1 only (listen + print)
+```bash
+python src/listener.py
+```
+
+### Phase 2 — Full conversation loop (current)
+```bash
+# Prerequisites: Ollama must be running
+ollama serve          # in a separate terminal
+ollama pull llama3.2  # one-time download ~2GB
+
+# Then run Rolex
+python src/main.py
 ```
 
 ---
@@ -81,32 +102,33 @@ rolex/
 
 ### Phase 1 — Ears (Listening)
 **Date:** 2026-05-24
-**Goal:** Rolex can hear you and transcribe speech to text.
+**Status:** ✅ Complete & Tested
 
-**What was built:**
 - Full project scaffolding (folders, git, .gitignore, requirements.txt)
-- `src/listener.py` — captures mic audio using `sounddevice`, detects voice activity via energy threshold, records until silence, saves to a temp WAV, then transcribes with OpenAI Whisper (local `base` model)
-- `README.md` — full setup instructions for Windows + VS Code
-- This `CAPSULE.md`
-
-**How to run Phase 1:**
-```bash
-python src/listener.py
-```
-Expected output: Rolex prints exactly what you said in the terminal.
-
-**Git tag:** `phase-1`
+- `src/listener.py` — mic capture, energy-based VAD, Whisper STT
+- CAPSULE.md + README.md created
+- **Git tag:** `phase-1`
 
 ---
 
 ### Phase 2 — Voice (Speaking)
-**Date:** TBD
-**Status:** ⏳ Not started
+**Date:** 2026-05-24
+**Status:** ✅ Complete
 
-**Planned:**
-- Ollama integration (local LLM)
-- Piper TTS voice output
-- Full conversation loop (listen → think → speak)
+**What was built:**
+- `src/brain.py` — Ollama HTTP client with full conversation history. Uses llama3.2 by default. Handles connection errors gracefully. Keeps session context so Rolex remembers within a conversation.
+- `src/speaker.py` — pyttsx3 TTS using Windows SAPI5. Auto-selects best voice (prefers Zira/David). No downloads needed — uses built-in Windows voices.
+- `src/main.py` — Full conversation loop: listen → transcribe → think → speak → repeat. ASCII boot screen. Voice commands: say "exit" to quit, "clear history" to reset context.
+- `requirements.txt` updated with `requests` and `pyttsx3`
+- `CAPSULE.md` updated
+
+**Voice commands:**
+| Say...                          | Effect                        |
+|---------------------------------|-------------------------------|
+| "exit" / "quit" / "goodbye"     | Shuts Rolex down              |
+| "clear history" / "start over"  | Wipes conversation memory     |
+
+**Git tag:** `phase-2`
 
 ---
 
@@ -115,18 +137,20 @@ Expected output: Rolex prints exactly what you said in the terminal.
 **Status:** ⏳ Not started
 
 **Planned:**
-- Screenshot capture
+- Screenshot capture (Pillow / pyautogui)
 - LLaVA vision model via Ollama
 - "What's on my screen?" capability
+- Vision integrated into main conversation loop
 
 ---
 
 ## Key Decisions & Notes
 
 - **Why fully local?** Zero cost, privacy, no internet dependency for core features.
-- **Why Whisper `base` model?** Good balance of speed and accuracy for a first version. Can upgrade to `small` or `medium` later for better accuracy.
-- **Why sounddevice over pyaudio?** Easier Windows installation, no PortAudio DLL issues.
-- **Voice Activity Detection approach:** Energy-threshold based (no extra VAD library dependency for Phase 1). Can switch to `webrtcvad` in a later version for more precision.
+- **Why pyttsx3 over Piper?** pyttsx3 uses Windows built-in voices — zero setup, works immediately. Piper gives better quality and can be swapped in later.
+- **Why llama3.2?** Good reasoning, fast on mid-range hardware. Can switch to `mistral` in brain.py config if preferred.
+- **Why requests over ollama SDK?** Fewer dependencies, easier to debug, Ollama's REST API is simple.
+- **Conversation memory:** Full history sent each turn so Rolex remembers context. History can be cleared with voice command or `brain.clear_history()`.
 - **Git strategy:** Each phase gets a commit + tag. Rollback is always one command away.
 
 ---
@@ -135,15 +159,20 @@ Expected output: Rolex prints exactly what you said in the terminal.
 
 ```bash
 # 1. Install Python 3.10+ from python.org
-# 2. Clone / open project in VS Code
-# 3. Create virtual environment
+# 2. Install Ollama from https://ollama.com/download
+# 3. Open project in VS Code
 python -m venv venv
 venv\Scripts\activate
-
-# 4. Install dependencies
 pip install -r requirements.txt
 
-# 5. Whisper will auto-download the model on first run (~140MB for base)
+# 4. Pull the LLM (one time, ~2GB)
+ollama pull llama3.2
+
+# 5. Start Ollama in a terminal (keep it running)
+ollama serve
+
+# 6. Run Rolex
+python src/main.py
 ```
 
 ---
