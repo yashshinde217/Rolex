@@ -10,8 +10,22 @@ numpy                   # Audio array processing
 # Phase 2 — Voice (Speaking)
 requests                # HTTP calls to Ollama local API
 edge-tts                # Microsoft neural TTS — realistic voices, free, no API key
-soundfile               # Read/play mp3 audio output from edge-tts
+soundfile               # Play mp3 audio output from edge-tts
 
-# Phase 3 — Eyes (Seeing) — install when ready
-# Pillow                # Screenshot capture and image processing
-# pyautogui             # Screen capture
+# Phase 3 — Eyes (Seeing) / V2 Phase 1 — Sharper Eyes
+Pillow                  # Screenshot capture + image processing
+pytesseract             # OCR — reads text from screen precisely
+pygetwindow             # Active window detection and capture
+
+# NOTE: Tesseract OCR engine must also be installed separately (not a pip package)
+# Download: https://github.com/UB-Mannheim/tesseract/wiki
+# Install to: C:\Program Files\Tesseract-OCR\
+# OCR will be skipped gracefully if Tesseract is not installed
+
+# V2 Phase 2 — Camera Eyes (coming soon)
+# opencv-python         # Webcam capture
+
+# V2 Phase 3 — Internet (coming soon)
+# duckduckgo-search     # Web search, no API key
+# beautifulsoup4        # Web page reading
+# lxml                  # HTML parser

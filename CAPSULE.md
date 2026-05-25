@@ -1,61 +1,64 @@
 # CAPSULE — Rolex AI Assistant
-> This file is the single source of truth for the Rolex project.
-> Any AI or developer reading this can fully understand the project's current state, goals, and history.
+> Single source of truth for the Rolex project.
+> Any AI or developer reading this can fully understand current state, goals, and history.
 > Updated after every phase or significant change.
 
 ---
 
 ## Last Updated
-**Timestamp:** 2026-05-24 01:00:00 UTC
-**Phase:** Phase 2 — Voice (Speaking) ✅ Complete
+**Timestamp:** 2026-05-24 03:00:00 UTC
+**Version:** V2 | **Phase:** Phase 1 — Sharper Eyes ✅ Complete
 
 ---
 
 ## Project Identity
 
-| Field        | Value                              |
-|--------------|------------------------------------|
-| Project Name | Rolex                              |
-| Version      | V1                                 |
-| Platform     | Windows (VS Code)                  |
-| Language     | Python 3.10+                       |
-| AI Brain     | Ollama — llama3.2 (local LLM)      |
-| STT          | OpenAI Whisper — base model (local)|
-| TTS          | pyttsx3 — Windows SAPI5 (offline)  |
-| Vision       | LLaVA via Ollama — Phase 3         |
+| Field        | Value                                          |
+|--------------|------------------------------------------------|
+| Project Name | Rolex                                          |
+| Current Ver  | V2 Phase 1                                     |
+| Platform     | Windows (VS Code)                              |
+| Language     | Python 3.10+                                   |
+| STT          | OpenAI Whisper — base model (local)            |
+| LLM Brain    | Ollama — llama3.2 (local)                      |
+| TTS          | Microsoft Edge TTS — en-US-GuyNeural (neural)  |
+| Vision       | LLaVA via Ollama + Tesseract OCR (local)       |
 | Cost         | 100% Free — all models run locally, no API keys |
-| Developer    | Solo project                       |
 
 ---
 
-## Vision
+## V1 Powers (Complete)
 
-Build a personal AI assistant named Rolex that runs entirely on the user's local machine — no cloud, no API costs, no subscriptions. Inspired by Jarvis (Iron Man). The assistant can hear, speak, and see. Eventually it will control the laptop and browse the internet autonomously.
+| Power    | Capability                              | Status |
+|----------|-----------------------------------------|--------|
+| Hearing  | Mic → Whisper STT → transcript          | ✅     |
+| Speaking | LLaMA brain → Edge TTS neural voice     | ✅     |
+| Seeing   | Screenshot → LLaVA → description        | ✅     |
 
----
+## V2 Upgrades
 
-## V1 Scope — Three Core Powers
-
-| Power    | Capability                                 | Status      |
-|----------|--------------------------------------------|-------------|
-| Hearing  | Listen via microphone, transcribe speech   | ✅ Phase 1  |
-| Speaking | Think via LLM, reply via TTS               | ✅ Phase 2  |
-| Seeing   | Capture screen, understand visually        | ⏳ Phase 3  |
+| Phase | Name          | Capability                                      | Status |
+|-------|---------------|-------------------------------------------------|--------|
+| 1     | Sharper Eyes  | OCR + active window + region + smarter prompts  | ✅     |
+| 2     | Camera Eyes   | Webcam → LLaVA → real-world vision              | ⏳     |
+| 3     | Internet      | Web search, page reader, news, weather          | ⏳     |
 
 ---
 
 ## Tech Stack
 
-| Layer            | Tool / Library         | Purpose                              |
-|------------------|------------------------|--------------------------------------|
-| Speech-to-Text   | OpenAI Whisper (local) | Convert mic audio to text            |
-| LLM Brain        | Ollama + LLaMA 3.2     | Local language model for reasoning   |
-| Text-to-Speech   | pyttsx3 (SAPI5)        | Natural voice output, fully offline  |
-| Vision           | LLaVA (via Ollama)     | Understand screenshots — Phase 3     |
-| Audio Capture    | sounddevice + scipy    | Mic input, WAV recording             |
-| HTTP Client      | requests               | Talk to Ollama's local API           |
-| Backend          | Python 3.10+           | Core runtime                         |
-| Version Control  | Git                    | Full history from day one            |
+| Layer          | Tool                    | Purpose                                  |
+|----------------|-------------------------|------------------------------------------|
+| STT            | OpenAI Whisper (local)  | Mic audio → text                         |
+| LLM            | Ollama + llama3.2       | Reasoning, conversation                  |
+| TTS            | Edge TTS GuyNeural      | Neural voice output                      |
+| Screen Vision  | LLaVA via Ollama        | Understand screen layout & content       |
+| OCR            | Tesseract + pytesseract | Read text from screen precisely          |
+| Window Capture | pygetwindow             | Capture active window only               |
+| Screenshot     | Pillow ImageGrab        | Full screen / region capture             |
+| Audio          | sounddevice + soundfile | Mic input and TTS playback               |
+| HTTP           | requests                | Ollama API calls                         |
+| Version Ctrl   | Git                     | Full history, phase tags                 |
 
 ---
 
@@ -63,131 +66,114 @@ Build a personal AI assistant named Rolex that runs entirely on the user's local
 
 ```
 rolex/
-├── CAPSULE.md              ← You are here. Living project PRD.
-├── README.md               ← Setup and run instructions
-├── requirements.txt        ← All Python dependencies
-├── .gitignore              ← Files excluded from git
-├── src/
-│   ├── listener.py         ← Phase 1: Mic input + Whisper STT
-│   ├── brain.py            ← Phase 2: Ollama LLM integration ✅
-│   ├── speaker.py          ← Phase 2: pyttsx3 TTS voice output ✅
-│   ├── vision.py           ← Phase 3: Screenshot + LLaVA vision
-│   └── main.py             ← Phase 2: Full loop entry point ✅
-├── assets/                 ← Voice models, config files
-└── logs/                   ← Session transcripts and debug logs
+├── CAPSULE.md
+├── README.md
+├── requirements.txt
+├── .gitignore
+└── src/
+    ├── listener.py   — Mic + Whisper STT
+    ├── brain.py      — Ollama LLM + history
+    ├── speaker.py    — Edge TTS neural voice
+    ├── vision.py     — V2: OCR + LLaVA + active window + regions
+    └── main.py       — Unified loop, dual-path vision routing
 ```
 
 ---
 
-## How to Run
+## Vision Routing Logic (V2 Phase 1)
 
-### Phase 1 only (listen + print)
-```bash
-python src/listener.py
+```
+User speaks
+    │
+    ├─ "read the error" / "read this" / "what does it say"
+    │       └─→ OCR path (Tesseract) — fast, precise text extraction
+    │
+    └─ "look at my screen" / "what do you see" / "describe my screen"
+            └─→ LLaVA path — understands layout, context, UI
 ```
 
-### Phase 2 — Full conversation loop (current)
-```bash
-# Prerequisites: Ollama must be running
-ollama serve          # in a separate terminal
-ollama pull llama3.2  # one-time download ~2GB
+Both paths support:
+- Full screen (default)
+- Active window ("this window", "current app")
+- Region crop ("top half", "bottom right", "left side", "center")
 
-# Then run Rolex
-python src/main.py
-```
+---
+
+## Voice Commands
+
+| Say...                              | Effect                                    |
+|-------------------------------------|-------------------------------------------|
+| "look at my screen"                 | LLaVA describes full screen               |
+| "read the error"                    | OCR reads text precisely                  |
+| "describe the top half"             | LLaVA looks at top half only             |
+| "read this window"                  | OCR on active window only                 |
+| "what's on the right side"          | LLaVA on right region                    |
+| "exit" / "quit"                     | Shut down                                 |
+| "clear history" / "start over"      | Reset conversation memory                 |
 
 ---
 
 ## Phase History
 
-### Phase 1 — Ears (Listening)
-**Date:** 2026-05-24
-**Status:** ✅ Complete & Tested
+### V1 Phase 1 — Ears | Date: 2026-05-24 | ✅ Tested
+Mic + Whisper STT. Git tag: `phase-1`
 
-- Full project scaffolding (folders, git, .gitignore, requirements.txt)
-- `src/listener.py` — mic capture, energy-based VAD, Whisper STT
-- CAPSULE.md + README.md created
-- **Git tag:** `phase-1`
+### V1 Phase 2 — Voice | Date: 2026-05-24 | ✅ Tested
+Ollama LLM + Edge TTS neural voice. Git tag: `phase-2`
+Bugfix: pyttsx3 → Edge TTS (robotic → neural)
 
----
+### V1 Phase 3 — Eyes | Date: 2026-05-24 | ✅ Tested
+LLaVA screenshot vision. Git tag: `phase-3`
 
-### Phase 2 — Voice (Speaking)
-**Date:** 2026-05-24
-**Status:** ✅ Complete
+### V2 Phase 1 — Sharper Eyes | Date: 2026-05-24 | ✅ Complete
+- Dual-path vision: OCR (text) vs LLaVA (understanding)
+- Active window capture via pygetwindow
+- Region capture: top/bottom/left/right/center
+- Higher resolution pipeline (quality 92, max 1920px)
+- OCR image pre-processing: upscale 2x, sharpen, contrast boost
+- Smarter LLaVA prompt with explicit instructions
+- Graceful fallback if Tesseract not installed
+- main.py shows [Eyes:OCR] or [Eyes:LLAVA] per response
+- Git tag: `v2-phase-1`
 
-**What was built:**
-- `src/brain.py` — Ollama HTTP client with full conversation history. Uses llama3.2 by default. Handles connection errors gracefully. Keeps session context so Rolex remembers within a conversation.
-- `src/speaker.py` — pyttsx3 TTS using Windows SAPI5. Auto-selects best voice (prefers Zira/David). No downloads needed — uses built-in Windows voices.
-- `src/main.py` — Full conversation loop: listen → transcribe → think → speak → repeat. ASCII boot screen. Voice commands: say "exit" to quit, "clear history" to reset context.
-- `requirements.txt` updated with `requests` and `pyttsx3`
-- `CAPSULE.md` updated
+### V2 Phase 2 — Camera Eyes | ⏳ Not started
+Webcam capture → LLaVA. Real-world vision.
 
-**Voice commands:**
-| Say...                          | Effect                        |
-|---------------------------------|-------------------------------|
-| "exit" / "quit" / "goodbye"     | Shuts Rolex down              |
-| "clear history" / "start over"  | Wipes conversation memory     |
-
-**Git tag:** `phase-2`
+### V2 Phase 3 — Internet | ⏳ Not started
+DuckDuckGo search, page reader, weather, news.
 
 ---
 
-### Phase 3 — Eyes (Seeing)
-**Date:** TBD
-**Status:** ⏳ Not started
-
-**Planned:**
-- Screenshot capture (Pillow / pyautogui)
-- LLaVA vision model via Ollama
-- "What's on my screen?" capability
-- Vision integrated into main conversation loop
-
----
-
-## Key Decisions & Notes
-
-- **Why fully local?** Zero cost, privacy, no internet dependency for core features.
-- **Why pyttsx3 over Piper?** pyttsx3 uses Windows built-in voices — zero setup, works immediately. Piper gives better quality and can be swapped in later.
-- **Why llama3.2?** Good reasoning, fast on mid-range hardware. Can switch to `mistral` in brain.py config if preferred.
-- **Why requests over ollama SDK?** Fewer dependencies, easier to debug, Ollama's REST API is simple.
-- **Conversation memory:** Full history sent each turn so Rolex remembers context. History can be cleared with voice command or `brain.clear_history()`.
-- **Git strategy:** Each phase gets a commit + tag. Rollback is always one command away.
-
----
-
-## Environment Setup (Windows)
+## Setup — Full (Windows)
 
 ```bash
-# 1. Install Python 3.10+ from python.org
-# 2. Install Ollama from https://ollama.com/download
-# 3. Open project in VS Code
+# Python environment
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 
-# 4. Pull the LLM (one time, ~2GB)
-ollama pull llama3.2
+# Ollama models (one time)
+ollama pull llama3.2    # ~2GB
+ollama pull llava       # ~4GB
 
-# 5. Start Ollama in a terminal (keep it running)
-ollama serve
+# Tesseract OCR (one time, optional but recommended)
+# Download: https://github.com/UB-Mannheim/tesseract/wiki
 
-# 6. Run Rolex
-python src/main.py
+# Run
+ollama serve            # keep open in terminal 1
+python src/main.py      # terminal 2
 ```
 
 ---
 
-## Future Phases (Post V1)
+## Future (V2 Phase 2+)
 
-| Phase | Feature                        |
-|-------|-------------------------------|
-| V2    | Computer control (PyAutoGUI)  |
-| V2    | Web search (DuckDuckGo)       |
-| V2    | Persistent memory (ChromaDB)  |
-| V3    | Browser automation (Playwright)|
-| V3    | File & app management         |
-| V3    | Custom wake word ("Hey Rolex")|
+- Webcam → LLaVA (real-world vision)
+- DuckDuckGo web search
+- Live webpage reading
+- Weather, news, Wikipedia
+- Smart routing: local vs internet
 
 ---
 
-*This capsule is updated by the developer or AI assistant after each phase or significant change. Timestamp reflects last modification.*
+*Updated after every phase. Timestamp reflects last modification.*
