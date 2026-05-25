@@ -6,8 +6,8 @@
 ---
 
 ## Last Updated
-**Timestamp:** 2026-05-24 03:00:00 UTC
-**Version:** V2 | **Phase:** Phase 1 — Sharper Eyes ✅ Complete
+**Timestamp:** 2026-05-24 04:00:00 UTC
+**Version:** V2 | **Phase:** Phase 2 — Camera Eyes ✅ Complete
 
 ---
 
@@ -16,32 +16,28 @@
 | Field        | Value                                          |
 |--------------|------------------------------------------------|
 | Project Name | Rolex                                          |
-| Current Ver  | V2 Phase 1                                     |
+| Current Ver  | V2 Phase 2                                     |
 | Platform     | Windows (VS Code)                              |
 | Language     | Python 3.10+                                   |
 | STT          | OpenAI Whisper — base model (local)            |
 | LLM Brain    | Ollama — llama3.2 (local)                      |
-| TTS          | Microsoft Edge TTS — en-US-GuyNeural (neural)  |
-| Vision       | LLaVA via Ollama + Tesseract OCR (local)       |
-| Cost         | 100% Free — all models run locally, no API keys |
+| TTS          | Microsoft Edge TTS — en-US-GuyNeural           |
+| Screen Vision| LLaVA via Ollama + Tesseract OCR (local)       |
+| Camera Vision| OpenCV webcam + LLaVA via Ollama (local)       |
+| Cost         | 100% Free — all models run locally, no API keys|
 
 ---
 
-## V1 Powers (Complete)
+## Capabilities
 
-| Power    | Capability                              | Status |
-|----------|-----------------------------------------|--------|
-| Hearing  | Mic → Whisper STT → transcript          | ✅     |
-| Speaking | LLaMA brain → Edge TTS neural voice     | ✅     |
-| Seeing   | Screenshot → LLaVA → description        | ✅     |
-
-## V2 Upgrades
-
-| Phase | Name          | Capability                                      | Status |
-|-------|---------------|-------------------------------------------------|--------|
-| 1     | Sharper Eyes  | OCR + active window + region + smarter prompts  | ✅     |
-| 2     | Camera Eyes   | Webcam → LLaVA → real-world vision              | ⏳     |
-| 3     | Internet      | Web search, page reader, news, weather          | ⏳     |
+| Power         | Capability                                       | Status |
+|---------------|--------------------------------------------------|--------|
+| Hearing       | Mic → Whisper STT → transcript                   | ✅ V1  |
+| Speaking      | LLaMA → Edge TTS neural voice                    | ✅ V1  |
+| Screen Vision | Screenshot → OCR or LLaVA → answer              | ✅ V1  |
+| Sharper Eyes  | Active window, region crop, dual-path routing    | ✅ V2.1|
+| Camera Eyes   | Webcam frame → LLaVA → real-world understanding  | ✅ V2.2|
+| Internet      | Web search, page reader, news, weather           | ⏳ V2.3|
 
 ---
 
@@ -56,6 +52,7 @@
 | OCR            | Tesseract + pytesseract | Read text from screen precisely          |
 | Window Capture | pygetwindow             | Capture active window only               |
 | Screenshot     | Pillow ImageGrab        | Full screen / region capture             |
+| Camera Capture | OpenCV (cv2)            | Webcam frame capture                     |
 | Audio          | sounddevice + soundfile | Mic input and TTS playback               |
 | HTTP           | requests                | Ollama API calls                         |
 | Version Ctrl   | Git                     | Full history, phase tags                 |
@@ -72,107 +69,94 @@ rolex/
 ├── .gitignore
 └── src/
     ├── listener.py   — Mic + Whisper STT
-    ├── brain.py      — Ollama LLM + history
+    ├── brain.py      — Ollama LLM + conversation history
     ├── speaker.py    — Edge TTS neural voice
-    ├── vision.py     — V2: OCR + LLaVA + active window + regions
-    └── main.py       — Unified loop, dual-path vision routing
+    ├── vision.py     — Screen: OCR + LLaVA + active window + regions
+    ├── camera.py     — Webcam: OpenCV capture + LLaVA (NEW)
+    └── main.py       — Unified loop, three-way routing
 ```
 
 ---
 
-## Vision Routing Logic (V2 Phase 1)
+## Routing Logic (V2 Phase 2)
 
 ```
 User speaks
     │
-    ├─ "read the error" / "read this" / "what does it say"
-    │       └─→ OCR path (Tesseract) — fast, precise text extraction
+    ├─ camera trigger  ("look at me", "scan this", "what's in front")
+    │       └─→ OpenCV webcam frame → LLaVA → answer
     │
-    └─ "look at my screen" / "what do you see" / "describe my screen"
-            └─→ LLaVA path — understands layout, context, UI
+    ├─ screen trigger  ("look at my screen", "read the error")
+    │       ├─ OCR trigger  → Tesseract text extraction
+    │       └─ vision trigger → LLaVA screen understanding
+    │
+    └─ everything else → Ollama LLaMA brain → answer
 ```
 
-Both paths support:
-- Full screen (default)
-- Active window ("this window", "current app")
-- Region crop ("top half", "bottom right", "left side", "center")
+Camera takes routing priority over screen vision if both triggers match.
 
 ---
 
 ## Voice Commands
 
-| Say...                              | Effect                                    |
-|-------------------------------------|-------------------------------------------|
-| "look at my screen"                 | LLaVA describes full screen               |
-| "read the error"                    | OCR reads text precisely                  |
-| "describe the top half"             | LLaVA looks at top half only             |
-| "read this window"                  | OCR on active window only                 |
-| "what's on the right side"          | LLaVA on right region                    |
-| "exit" / "quit"                     | Shut down                                 |
-| "clear history" / "start over"      | Reset conversation memory                 |
+| Say...                              | Routes to         | Effect                          |
+|-------------------------------------|-------------------|---------------------------------|
+| "look at me"                        | Camera            | Webcam → LLaVA                  |
+| "scan this"                         | Camera            | Webcam → LLaVA                  |
+| "what's in front of you"            | Camera            | Webcam → LLaVA                  |
+| "can you see me"                    | Camera            | Webcam → LLaVA                  |
+| "look at my screen"                 | Screen / LLaVA    | Screenshot → LLaVA              |
+| "read the error"                    | Screen / OCR      | Screenshot → Tesseract          |
+| "describe the top half"             | Screen / LLaVA    | Cropped screenshot → LLaVA      |
+| "exit" / "quit"                     | Control           | Shut down                       |
+| "clear history" / "start over"      | Control           | Reset conversation memory       |
 
 ---
 
 ## Phase History
 
-### V1 Phase 1 — Ears | Date: 2026-05-24 | ✅ Tested
-Mic + Whisper STT. Git tag: `phase-1`
+### V1 Phase 1 — Ears | ✅ | tag: phase-1
+### V1 Phase 2 — Voice | ✅ | tag: phase-2
+### V1 Phase 3 — Eyes | ✅ | tag: phase-3
+### V2 Phase 1 — Sharper Eyes | ✅ | tag: v2-phase-1
+OCR + active window + region crop + smarter LLaVA prompts
 
-### V1 Phase 2 — Voice | Date: 2026-05-24 | ✅ Tested
-Ollama LLM + Edge TTS neural voice. Git tag: `phase-2`
-Bugfix: pyttsx3 → Edge TTS (robotic → neural)
-
-### V1 Phase 3 — Eyes | Date: 2026-05-24 | ✅ Tested
-LLaVA screenshot vision. Git tag: `phase-3`
-
-### V2 Phase 1 — Sharper Eyes | Date: 2026-05-24 | ✅ Complete
-- Dual-path vision: OCR (text) vs LLaVA (understanding)
-- Active window capture via pygetwindow
-- Region capture: top/bottom/left/right/center
-- Higher resolution pipeline (quality 92, max 1920px)
-- OCR image pre-processing: upscale 2x, sharpen, contrast boost
-- Smarter LLaVA prompt with explicit instructions
-- Graceful fallback if Tesseract not installed
-- main.py shows [Eyes:OCR] or [Eyes:LLAVA] per response
-- Git tag: `v2-phase-1`
-
-### V2 Phase 2 — Camera Eyes | ⏳ Not started
-Webcam capture → LLaVA. Real-world vision.
+### V2 Phase 2 — Camera Eyes | ✅ Complete | tag: v2-phase-2
+- New file: `src/camera.py`
+  - OpenCV webcam capture (configurable camera index)
+  - WARMUP_FRAMES (5) discarded so exposure stabilises before capture
+  - HD resolution request (1280×720)
+  - Structured LLaVA prompt for real-world context
+  - Graceful error if no webcam found
+- `main.py` updated: three-way routing (camera > screen > brain)
+  - Camera shown in purple [Camera] in terminal
+  - Camera answers stored in brain history for follow-ups
+  - Graceful fallback if opencv not installed
+- `requirements.txt`: added opencv-python
 
 ### V2 Phase 3 — Internet | ⏳ Not started
-DuckDuckGo search, page reader, weather, news.
+DuckDuckGo search, page reader, weather, news, Wikipedia, YouTube summary.
 
 ---
 
 ## Setup — Full (Windows)
 
 ```bash
-# Python environment
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 
 # Ollama models (one time)
-ollama pull llama3.2    # ~2GB
-ollama pull llava       # ~4GB
+ollama pull llama3.2
+ollama pull llava
 
-# Tesseract OCR (one time, optional but recommended)
-# Download: https://github.com/UB-Mannheim/tesseract/wiki
+# Tesseract (optional, for OCR)
+# https://github.com/UB-Mannheim/tesseract/wiki
 
 # Run
-ollama serve            # keep open in terminal 1
+ollama serve            # terminal 1
 python src/main.py      # terminal 2
 ```
-
----
-
-## Future (V2 Phase 2+)
-
-- Webcam → LLaVA (real-world vision)
-- DuckDuckGo web search
-- Live webpage reading
-- Weather, news, Wikipedia
-- Smart routing: local vs internet
 
 ---
 
