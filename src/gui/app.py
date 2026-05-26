@@ -189,6 +189,33 @@ class RolexApp:
         sig.user_said.connect(lambda t: self._window.add_message(t, True))
         sig.viz_levels.connect(self._window.set_viz_levels)
 
+        # Settings signals
+        self._window._settings.voice_changed.connect(self._on_voice_changed)
+        self._window._settings.model_changed.connect(self._on_model_changed)
+
+    def _on_voice_changed(self, voice: str):
+        """Hot-swap TTS voice without restarting."""
+        try:
+            from speaker import Speaker
+            import gui.theme as theme
+            self._worker._speaker = Speaker.__new__(Speaker)
+            self._worker._speaker.voice_id = None
+            self._worker._speaker.voice = voice
+        except Exception:
+            pass
+
+    def _on_model_changed(self, model: str):
+        """Update Ollama model used by brain."""
+        try:
+            self._worker._brain.history = []
+            import brain as brain_mod
+            brain_mod.OLLAMA_MODEL = model
+            self._worker._brain = self._worker._brain.__class__.__new__(
+                self._worker._brain.__class__)
+            self._worker._brain.__init__()
+        except Exception:
+            pass
+
     def run(self):
         self._window.show()
         self._worker.start()
